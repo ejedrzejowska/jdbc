@@ -1,22 +1,55 @@
 package pl.sda.jdbc.dbapp;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class JdbcMain {
     public static void main(String[] args) throws Exception {
 //        firstInsert();
+        firstSelect();
         return;
     }
 
-    private static void firstInsert() throws SQLException {
-        Connection connection = getConnection();
+    private static void firstSelect() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("select * from test");
+            while (resultSet.next()){
+                int id = resultSet.getInt("id"); //resultSet.getInt(1);
+                String name = resultSet.getString("name");
+                System.out.println("Record: " + id + ", name: " + name);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-        Statement statement = connection.createStatement();
-        statement.executeUpdate("insert into test (name) values('first name')");
-        connection.close();
+    private static void firstInsert() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     private static Connection getConnection() throws SQLException {
