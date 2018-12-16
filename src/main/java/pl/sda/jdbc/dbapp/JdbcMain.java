@@ -1,9 +1,15 @@
 package pl.sda.jdbc.dbapp;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
 
 public class JdbcMain {
+
+    private static DataSource datasource;
+
     public static void main(String[] args) throws Exception {
 //        firstInsert();
 //        firstSelect();
@@ -11,9 +17,38 @@ public class JdbcMain {
 //        selectEmployeesWithPreparedStatement(new BigDecimal("1600"), new BigDecimal("2500"));
 //        selectEmployee("CLARK?' OR 1 = 1 -- "); //SQL injection
 //        selectEmployeeWithPreparedStatement("CLARK?' OR 1 = 1 -- "); //SQL injection
-        updateEmployeeSalary("MANAGER", new BigDecimal("100"));
+//        updateEmployeeSalary("MANAGER", new BigDecimal("100"));
+        updateTotalPayouts( new BigDecimal("100"),7369);
 
         return;
+    }
+
+    private static void updateTotalPayouts(BigDecimal amount, int id) throws Exception{
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false); //transakcja, wykonaja sie wszystkie operacje albo zadna + reczny commit lub rollback!
+            String sql = "update employee set totalPayouts = coalesce (totalPayouts, 0) + ? where empno = ?"; //ifnull(totalPayouts, 0)
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(2, id);
+            ps.setBigDecimal(1, amount);
+            ps.executeUpdate();
+            String sql2 = "insert into payout (empid, amount, added) values ( ?, ?, NOW())";
+            PreparedStatement ps2 = connection.prepareStatement(sql2);
+            ps2.setInt(1, id);
+            ps2.setBigDecimal(2, amount);
+            ps2.executeUpdate();
+            connection.commit();
+        } catch (Exception e){
+            connection.rollback();
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void updateEmployeeSalary(String job, BigDecimal raise) {
@@ -190,14 +225,34 @@ public class JdbcMain {
                 e.printStackTrace();
             }
         }
-
     }
 
-    private static Connection getConnection() throws SQLException {
-        String connectionString = "jdbc:mysql://127.0.0.1:3306/jdbc?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowMultiQueries=true";
-        String userName = "jdbc-app-user";
-        String password = "jdbc";
+    private static Connection getConnection() throws SQLException { //pula połączeń, aby zoptymalizować tworzenie bazy danych. Tworzenie połączeń kosztuje
 
-        return DriverManager.getConnection(connectionString, userName, password);
+        if(datasource == null) {
+
+            String connectionString = "jdbc:mysql://127.0.0.1:3306/jdbc?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowMultiQueries=true";
+            String userName = "jdbc-app-user";
+            String password = "jdbc";
+
+            BasicDataSource basicDataSource = new BasicDataSource();
+            basicDataSource.setUrl(connectionString);
+            basicDataSource.setUsername(userName);
+            basicDataSource.setPassword(password);
+            basicDataSource.setMaxTotal(5);
+            basicDataSource.setInitialSize(3);
+            basicDataSource.setMaxWaitMillis(5000);
+
+            datasource = basicDataSource;
+        }
+        return datasource.getConnection(); //nie ten sam getConnection() metoda.
     }
+
+//    private static Connection getConnection() throws SQLException {
+//        String connectionString = "jdbc:mysql://127.0.0.1:3306/jdbc?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowMultiQueries=true";
+//        String userName = "jdbc-app-user";
+//        String password = "jdbc";
+//
+//        return DriverManager.getConnection(connectionString, userName, password);
+//    }
 }
