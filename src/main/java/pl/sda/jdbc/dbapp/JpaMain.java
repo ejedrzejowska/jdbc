@@ -1,5 +1,6 @@
 package pl.sda.jdbc.dbapp;
 
+import pl.sda.jdbc.dbapp.entity.Department;
 import pl.sda.jdbc.dbapp.entity.Post;
 
 import javax.persistence.EntityManager;
@@ -31,7 +32,71 @@ public class JpaMain {
 //        showSomePostUniversal("%ir%");
         showSomePostsByNameQuery("%ir%");
 
+        System.out.println("------------updates------------");
+
+        updatePost();
+        showAllPost();
+
+//        System.out.println("----------- deletes-------");
+//        deletePost();
+//        showAllPost();
+
+//        System.out.println("----------- deletes with delete from -------");
+//        deletePosts(2L);
+//        showAllPost();
+
+//        System.out.println("---------- departments ---------");
+//        showDepartments();
+
         System.out.println("End...");
+    }
+
+    private static void showDepartments() {
+        EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
+        String query = "SELECT d FROM Department d WHERE d.deptno IN (20, 40, 60, 80)";
+//        String query = "SELECT d FROM Department d WHERE d.deptno LIKE '[2468]%'";
+
+        List<Department> resultList = em.createQuery(query, Department.class).getResultList();
+        System.out.println(resultList);
+
+        em.close();
+    }
+
+    private static void deletePosts(Long param) {
+        EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
+        String query = "DELETE FROM Post p WHERE p.id > :parameter";
+        em.getTransaction().begin();
+        em.createQuery(query)
+                .setParameter("parameter", param)
+                .executeUpdate();
+        em.getTransaction().commit();
+
+        em.close();
+
+    }
+
+    private static void deletePost() {
+        EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
+
+        Post post = em.find(Post.class, 2L);
+        em.getTransaction().begin();
+        em.remove(post);
+        em.getTransaction().commit();
+
+        em.close();
+    }
+
+    private static void updatePost() {
+        EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
+
+        Post post = em.find(Post.class, 1L);
+        post.setTitle("First post");
+
+        em.getTransaction().begin();
+        em.merge(post);
+        em.getTransaction().commit();
+
+        em.close();
     }
 
     private static void showSomePostsByNameQuery(String titlePhrase) {

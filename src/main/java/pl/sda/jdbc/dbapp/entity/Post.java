@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -14,15 +15,13 @@ import javax.persistence.*;
 @NamedQueries({
         @NamedQuery(name = "postsLikeTitle", query = "SELECT p FROM Post p WHERE p.title LIKE :title")
 })
-public class Post {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Post extends AuditEntity{
 
     private String title;
 
     @Column(name = "content", length = 2000)
     private String body;
+
 
 }
 

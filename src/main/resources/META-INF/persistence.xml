@@ -13,6 +13,7 @@
 
             <!-- poniższe nie do używania w wersji produkcyjnej, create dropuje istniejaca tabele -->
             <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <!--<property name="hibernate.hbm2ddl.auto" value="validate"/> &lt;!&ndash; albo update &ndash;&gt;-->
             <property name="hibernate.show_sql" value="true"/>
         </properties>
 
