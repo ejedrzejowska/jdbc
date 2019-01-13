@@ -5,7 +5,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,6 +23,13 @@ public class Post extends AuditEntity{
     @Column(name = "content", length = 2000)
     private String body;
 
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "commentedPost")  //moze byc tablica kaskad
+    //@JoinColumn(name = "postId") po stronie Many - czyli comment
+    private List<Comment> comments = new ArrayList<>();
+
+    public void addComment(Comment comment){
+        comments.add(comment);
+    }
 
 }
 

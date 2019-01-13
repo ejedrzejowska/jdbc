@@ -1,5 +1,6 @@
 package pl.sda.jdbc.dbapp;
 
+import pl.sda.jdbc.dbapp.entity.Comment;
 import pl.sda.jdbc.dbapp.entity.Department;
 import pl.sda.jdbc.dbapp.entity.Post;
 
@@ -7,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JpaMain {
@@ -160,10 +162,15 @@ public class JpaMain {
         EntityManager em = ENTITY_MANAGER_FACTORY.createEntityManager();
 
         Post post = new Post();
+        Comment comment = new Comment();
+        comment.setNickname("nick");
+        comment.setCommentBody("jakiś pierwszy komentarz");
         post.setTitle(title);
         post.setBody(body);
+        post.addComment(comment);
 
         em.getTransaction().begin();
+//        em.persist(comment);
         em.persist(post);
         em.getTransaction().commit();
         em.close();

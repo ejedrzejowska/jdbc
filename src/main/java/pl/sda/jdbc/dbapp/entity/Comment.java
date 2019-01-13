@@ -16,4 +16,8 @@ public class Comment extends AuditEntity{
     private String commentBody;
 
     private String nickname;
+
+    @ManyToOne
+    @JoinColumn(name = "postId")
+    private Post commentedPost;
 }
